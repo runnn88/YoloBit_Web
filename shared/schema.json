@@ -1,0 +1,13 @@
+{
+  "sensorReading": {
+    "deviceId": "string",
+    "metric": "string",
+    "value": "number",
+    "timestamp": "string"
+  },
+  "deviceState": {
+    "deviceId": "string",
+    "enabled": "boolean",
+    "updatedAt": "string"
+  }
+}
