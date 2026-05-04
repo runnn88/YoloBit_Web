@@ -4,9 +4,47 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>IoT Dashboard</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: "Segoe UI", sans-serif;
+        background: linear-gradient(180deg, #eef7e8 0%, #dff1de 100%);
+        color: #132a13;
+      }
+
+      .boot-screen {
+        max-width: 960px;
+        margin: 0 auto;
+        padding: 32px 20px 48px;
+      }
+
+      .boot-card {
+        border: 1px solid #b7d3b0;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.88);
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(19, 42, 19, 0.08);
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
+    <div id="root">
+      <main class="boot-screen">
+        <section class="boot-card">
+          <h1>YoloBit UNO Control Center</h1>
+          <p>The page shell is loading.</p>
+          <p>If this message never changes, open the Vite URL in your terminal instead of opening <code>index.html</code> directly.</p>
+        </section>
+      </main>
+    </div>
+    <noscript>
+      <main class="boot-screen">
+        <section class="boot-card">
+          <h1>JavaScript is required</h1>
+          <p>This dashboard needs the Vite dev server and browser JavaScript enabled.</p>
+        </section>
+      </main>
+    </noscript>
+    <script type="module" src="./src/main.jsx"></script>
   </body>
 </html>

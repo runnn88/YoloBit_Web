@@ -9,7 +9,12 @@ module.exports = function routes({ sensorService, deviceService }) {
 
   router.get("/sensors", sensorController.list);
   router.get("/devices", deviceController.list);
+  router.get("/devices/ports", deviceController.listPorts);
   router.post("/devices/pump", deviceController.setPump);
+  router.post("/devices/yolobit/connect", deviceController.connectYoloBit);
+  router.post("/devices/yolobit/disconnect", deviceController.disconnectYoloBit);
+  router.post("/devices/yolobit/leaf", deviceController.setLeafState);
+  router.post("/devices/yolobit/serial", deviceController.sendRawSerial);
 
   return router;
 };

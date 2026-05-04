@@ -1,3 +1,5 @@
+import React from "react";
+
 export function Section({ title, children }) {
   return (
     <section>

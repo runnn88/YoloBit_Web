@@ -5,7 +5,7 @@ from machine import RTC
 import ntptime
 import time
 from mqtt import mqtt
-from yolobit import pin1, pin2, pin13, translate
+from yolobit import button_a, button_b, display, light_level, pin0, pin1, pin2, pin13, temperature, translate
 
 from registries.yolobit_registry import get_modules
 
@@ -19,6 +19,13 @@ def build_context():
         "event_manager": event_manager,
         "dht20": dht20,
         "rtc": RTC,
+        "display": display,
+        "button_a": button_a,
+        "button_b": button_b,
+        "temperature": temperature,
+        "light_level": light_level,
+        "time_touch_pin": pin0,
+        "date_touch_pin": pin1,
         "pin1": pin1,
         "pin2": pin2,
         "pump_pin": pin13,

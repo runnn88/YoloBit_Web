@@ -23,6 +23,75 @@ button {
   padding: 32px 20px 48px;
 }
 
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  backdrop-filter: blur(10px);
+  background: rgba(238, 247, 232, 0.85);
+  border-bottom: 1px solid rgba(45, 106, 79, 0.12);
+}
+
+.top-nav-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.top-nav-link {
+  border: 1px solid #b7d3b0;
+  border-radius: 999px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #132a13;
+}
+
+.top-nav-link.active {
+  background: #2d6a4f;
+  color: #ffffff;
+  border-color: #2d6a4f;
+}
+
+.hero {
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #2d6a4f;
+}
+
+.hero h1 {
+  margin: 0 0 10px;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+}
+
+.hero-copy {
+  max-width: 680px;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.status-banner {
+  margin: 0 0 18px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid #d8e8d4;
+}
+
+.status-banner.error {
+  border-color: #d77a61;
+  background: #fff1ec;
+}
+
 .sensor-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -31,12 +100,17 @@ button {
 }
 
 .sensor-card,
-.pump-control {
+.pump-control,
+.setup-card {
   border: 1px solid #b7d3b0;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.85);
   padding: 20px;
   box-shadow: 0 10px 30px rgba(19, 42, 19, 0.08);
+}
+
+.sensor-card-empty {
+  min-height: 144px;
 }
 
 .pump-control button {
@@ -45,4 +119,155 @@ button {
   padding: 10px 16px;
   color: white;
   background: #2d6a4f;
+}
+
+.setup-guide {
+  margin-top: 24px;
+}
+
+.setup-guide-header {
+  margin-bottom: 18px;
+}
+
+.setup-guide-header h2 {
+  margin: 0 0 10px;
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+}
+
+.setup-guide-header p:last-child {
+  margin-bottom: 0;
+  max-width: 760px;
+  line-height: 1.6;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.setup-card h3 {
+  margin-top: 0;
+}
+
+.wiring-table {
+  display: grid;
+  gap: 10px;
+}
+
+.wiring-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.2fr) minmax(90px, 0.8fr) minmax(160px, 1.4fr);
+  gap: 12px;
+  align-items: start;
+  padding-top: 10px;
+  border-top: 1px solid #d8e8d4;
+}
+
+.wiring-head {
+  padding-top: 0;
+  border-top: 0;
+  font-weight: 700;
+  color: #2d6a4f;
+}
+
+.setup-steps {
+  margin: 0;
+  padding-left: 20px;
+  line-height: 1.6;
+}
+
+.setup-note {
+  margin-bottom: 0;
+  color: #40634d;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill-ok {
+  background: #daf0de;
+  color: #1d513a;
+}
+
+.status-pill-warn {
+  background: #fff1ec;
+  color: #9d4d38;
+}
+
+.connection-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
+.primary-action,
+.secondary-action {
+  border-radius: 999px;
+  padding: 11px 16px;
+  font-weight: 700;
+}
+
+.primary-action {
+  border: 1px solid #2d6a4f;
+  background: #2d6a4f;
+  color: #ffffff;
+}
+
+.secondary-action {
+  border: 1px solid #b7d3b0;
+  background: rgba(255, 255, 255, 0.8);
+  color: #132a13;
+}
+
+.field-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.text-input,
+.text-area {
+  width: 100%;
+  border: 1px solid #b7d3b0;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #132a13;
+  font: inherit;
+}
+
+.text-area {
+  resize: vertical;
+}
+
+.text-area-large {
+  min-height: 320px;
+}
+
+.usb-console-card {
+  margin-top: 16px;
+}
+
+.usb-console {
+  margin: 0;
+  min-height: 220px;
+  max-height: 360px;
+  overflow: auto;
+  border-radius: 12px;
+  padding: 14px;
+  background: #102319;
+  color: #dff7df;
+  font-family: "Consolas", "Courier New", monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }

@@ -1,11 +1,34 @@
 class DeviceStore {
   constructor() {
-    this.state = {};
+    this.state = {
+      "pump-001": {
+        deviceId: "pump-001",
+        connected: false,
+        desiredEnabled: false,
+        reportedEnabled: false,
+        status: "offline",
+        updatedAt: new Date().toISOString(),
+      },
+      "yolobit-uno-001": {
+        deviceId: "yolobit-uno-001",
+        connected: false,
+        transport: "usb-serial",
+        serialPath: "",
+        baudRate: null,
+        desiredLeafState: "LA VANG",
+        reportedLeafState: null,
+        lastCommand: null,
+        lastSerialMessage: "",
+        status: "serial_disconnected",
+        updatedAt: new Date().toISOString(),
+      },
+    };
     this.commands = [];
   }
 
   updateState(deviceId, nextState) {
     this.state[deviceId] = {
+      deviceId,
       ...(this.state[deviceId] || {}),
       ...nextState,
       updatedAt: new Date().toISOString(),
