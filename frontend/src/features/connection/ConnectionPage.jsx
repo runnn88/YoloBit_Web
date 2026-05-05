@@ -24,12 +24,7 @@ export function ConnectionPage() {
 
   async function refreshStatus() {
     try {
-      const [health, deviceRows, portRows] = await Promise.all([
-        fetchBackendHealth(),
-        fetchDevices(),
-        fetchYoloBitPorts(),
-      ]);
-
+      const [health, deviceRows, portRows] = await Promise.all([fetchBackendHealth(), fetchDevices(), fetchYoloBitPorts()]);
       setBackendOk(Boolean(health?.ok));
       setDevices(deviceRows || {});
       setPorts(portRows || []);
@@ -100,40 +95,35 @@ export function ConnectionPage() {
   }
 
   const yoloBitDevice = devices["yolobit-001"] || null;
-  const pumpDevice = devices["pump-001"] || null;
-  const connected = Boolean(yoloBitDevice?.connected);
-  const desiredEnabled = Boolean(pumpDevice?.desiredEnabled);
-  const reportedEnabled = Boolean(pumpDevice?.reportedEnabled);
 
   return (
-    <main className="dashboard">
-      <header className="hero">
-        <p className="eyebrow">Connection Check</p>
-        <h1>Yolo:Bit Backend Connection</h1>
-        <p className="hero-copy">
-          This page controls the backend serial connection to the Yolo:Bit. The frontend does not talk to the board directly.
-        </p>
-      </header>
+    <main className="page-shell">
+      <section className="hero-panel">
+        <div>
+          <p className="hero-kicker">Connection Check</p>
+          <h2 className="hero-title">Bind the backend to the Yolo:Bit</h2>
+          <p className="hero-copy">The frontend never talks to the board directly. All live data and control flow through the backend serial connection.</p>
+        </div>
+        <div className="hero-badges">
+          <span className={backendOk ? "mode-pill live" : "mode-pill idle"}>{backendOk ? "Backend Ready" : "Backend Offline"}</span>
+          <span className={yoloBitDevice?.connected ? "mode-pill live" : "mode-pill idle"}>{yoloBitDevice?.connected ? "Board Connected" : "Board Offline"}</span>
+        </div>
+      </section>
 
       {errorMessage ? <p className="status-banner error">{errorMessage}</p> : null}
 
-      <section className="setup-grid">
-        <article className="setup-card">
-          <h3>Backend API</h3>
-          <p>Status: <StatusPill label={backendOk ? "Reachable" : "Offline"} tone={backendOk ? "ok" : "warn"} /></p>
-          <p>Health endpoint: <code>/health</code></p>
-          <p>Last checked: {lastCheckedAt || "Checking..."}</p>
-        </article>
+      <section className="dashboard-bottom-grid">
+        <article className="panel-card">
+          <div className="panel-head">
+            <div>
+              <p className="panel-kicker">Backend Port</p>
+              <h3>Serial Port Selection</h3>
+            </div>
+            <span className="mode-pill subtle">USB</span>
+          </div>
 
-        <article className="setup-card">
-          <h3>Serial port</h3>
           <label className="field-label" htmlFor="serial-port-select">Port</label>
-          <select
-            className="text-input"
-            id="serial-port-select"
-            onChange={(event) => setSelectedPort(event.target.value)}
-            value={selectedPort}
-          >
+          <select className="text-input" id="serial-port-select" onChange={(event) => setSelectedPort(event.target.value)} value={selectedPort}>
             <option value="">Choose a COM port</option>
             {ports.map((port) => (
               <option key={port.path} value={port.path}>
@@ -143,44 +133,37 @@ export function ConnectionPage() {
           </select>
 
           <label className="field-label" htmlFor="serial-baud-rate">Baud rate</label>
-          <input
-            className="text-input"
-            id="serial-baud-rate"
-            onChange={(event) => setBaudRate(event.target.value)}
-            value={baudRate}
-          />
+          <input className="text-input" id="serial-baud-rate" onChange={(event) => setBaudRate(event.target.value)} value={baudRate} />
 
           <div className="connection-actions">
-            <button className="primary-action" disabled={!selectedPort || busyAction !== "" || connected} onClick={handleConnect} type="button">
-              {busyAction === "connect" ? "Connecting..." : "Connect Backend USB"}
+            <button className="primary-action" disabled={!selectedPort || busyAction !== "" || yoloBitDevice?.connected} onClick={handleConnect} type="button">
+              {busyAction === "connect" ? "Connecting..." : "Connect"}
             </button>
-            <button className="secondary-action" disabled={busyAction !== "" || !connected} onClick={handleDisconnect} type="button">
+            <button className="secondary-action" disabled={busyAction !== "" || !yoloBitDevice?.connected} onClick={handleDisconnect} type="button">
               {busyAction === "disconnect" ? "Disconnecting..." : "Disconnect"}
             </button>
-            <button className="secondary-action" disabled={busyAction !== "" || !connected} onClick={handleRefreshSensors} type="button">
+            <button className="secondary-action" disabled={busyAction !== "" || !yoloBitDevice?.connected} onClick={handleRefreshSensors} type="button">
               {busyAction === "refresh" ? "Refreshing..." : "Refresh Sensors"}
             </button>
           </div>
         </article>
-      </section>
 
-      <section className="setup-grid">
-        <article className="setup-card">
-          <h3>Yolo:Bit device</h3>
-          <p>Status: <StatusPill label={connected ? "Connected" : "Not connected"} tone={connected ? "ok" : "warn"} /></p>
-          <p>Serial path: <code>{yoloBitDevice?.serialPath || "waiting"}</code></p>
-          <p>Baud rate: <code>{yoloBitDevice?.baudRate || baudRate}</code></p>
-          <p>Backend status: <code>{yoloBitDevice?.status || "offline"}</code></p>
-          <p>Last serial message: <code>{yoloBitDevice?.lastSerialMessage || "Waiting"}</code></p>
-          <p>Last sensor read: <code>{yoloBitDevice?.lastSensorReadAt || "Waiting"}</code></p>
-          <p>Sensor error: <code>{yoloBitDevice?.sensorError || "None"}</code></p>
-        </article>
+        <article className="panel-card">
+          <div className="panel-head">
+            <div>
+              <p className="panel-kicker">Live Serial State</p>
+              <h3>Board Diagnostics</h3>
+            </div>
+            <StatusPill label={yoloBitDevice?.connected ? "Connected" : "Waiting"} tone={yoloBitDevice?.connected ? "ok" : "warn"} />
+          </div>
 
-        <article className="setup-card">
-          <h3>Pump state</h3>
-          <p>Desired pump state: {desiredEnabled ? "ON" : "OFF"}</p>
-          <p>Confirmed pump state: {reportedEnabled ? "Running" : "Stopped"}</p>
-          <p>Pump backend status: <code>{pumpDevice?.status || "offline"}</code></p>
+          <p className="panel-copy">Last checked: <code>{lastCheckedAt || "Checking..."}</code></p>
+          <p className="panel-copy">Serial path: <code>{yoloBitDevice?.serialPath || "not connected"}</code></p>
+          <p className="panel-copy">Baud rate: <code>{yoloBitDevice?.baudRate || baudRate}</code></p>
+          <p className="panel-copy">Backend status: <code>{yoloBitDevice?.status || "offline"}</code></p>
+          <p className="panel-copy">Last serial message: <code>{yoloBitDevice?.lastSerialMessage || "waiting"}</code></p>
+          <p className="panel-copy">Last sensor read: <code>{yoloBitDevice?.lastSensorReadAt || "waiting"}</code></p>
+          <p className="panel-copy">Sensor error: <code>{yoloBitDevice?.sensorError || "none"}</code></p>
         </article>
       </section>
     </main>

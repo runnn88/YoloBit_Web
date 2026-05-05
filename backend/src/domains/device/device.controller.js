@@ -1,4 +1,12 @@
-﻿function createDeviceController(deviceService) {
+function logDeviceError(action, error, details = {}) {
+  console.error(`[device-controller] ${action} failed`, {
+    message: error?.message || String(error),
+    stack: error?.stack,
+    ...details,
+  });
+}
+
+function createDeviceController(deviceService) {
   return {
     list(req, res) {
       res.json(deviceService.listState());
@@ -8,6 +16,7 @@
         const result = await deviceService.listSerialPorts();
         res.json(result);
       } catch (error) {
+        logDeviceError("listPorts", error);
         next(error);
       }
     },
@@ -16,6 +25,7 @@
         const result = await deviceService.connectYoloBit(req.body || {});
         res.json(result);
       } catch (error) {
+        logDeviceError("connectYoloBit", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -24,6 +34,7 @@
         const result = await deviceService.disconnectYoloBit();
         res.json(result);
       } catch (error) {
+        logDeviceError("disconnectYoloBit", error);
         next(error);
       }
     },
@@ -32,6 +43,7 @@
         const result = await deviceService.refreshSensors();
         res.json(result);
       } catch (error) {
+        logDeviceError("refreshSensors", error);
         next(error);
       }
     },
@@ -40,6 +52,7 @@
         const result = await deviceService.setLeafState(req.body?.state);
         res.json(result);
       } catch (error) {
+        logDeviceError("setLeafState", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -48,6 +61,7 @@
         const result = await deviceService.sendRawSerial(req.body?.command);
         res.json(result);
       } catch (error) {
+        logDeviceError("sendRawSerial", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -56,6 +70,16 @@
         const result = await deviceService.setPump(Boolean(req.body?.enabled));
         res.json(result);
       } catch (error) {
+        logDeviceError("setPump", error, { body: req.body || {} });
+        next(error);
+      }
+    },
+    setWateringMode(req, res, next) {
+      try {
+        const result = deviceService.setWateringMode(req.body?.mode);
+        res.json(result);
+      } catch (error) {
+        logDeviceError("setWateringMode", error, { body: req.body || {} });
         next(error);
       }
     },

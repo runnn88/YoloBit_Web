@@ -11,6 +11,7 @@ module.exports = function routes({ sensorService, deviceService }) {
   router.get("/devices", deviceController.list);
   router.get("/devices/ports", deviceController.listPorts);
   router.post("/devices/pump", deviceController.setPump);
+  router.post("/devices/watering-mode", deviceController.setWateringMode);
   router.post("/devices/yolobit/connect", deviceController.connectYoloBit);
   router.post("/devices/yolobit/disconnect", deviceController.disconnectYoloBit);
   router.post("/devices/yolobit/refresh", deviceController.refreshSensors);

@@ -6,6 +6,7 @@
         connected: false,
         desiredEnabled: false,
         reportedEnabled: false,
+        wateringMode: "manual",
         status: "offline",
         updatedAt: new Date().toISOString(),
       },

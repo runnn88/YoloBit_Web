@@ -1,4 +1,4 @@
-﻿const { EVENTS } = require("../../../../shared/events");
+const { EVENTS } = require("../../../../shared/events");
 
 const DEVICE_ID = "yolobit-001";
 const SENSOR_DEVICE_ID = "yolobit-sensors-001";
@@ -24,38 +24,80 @@ class DeviceService {
     this.sensorPollTimer = null;
     this.sensorPollInFlight = false;
     this.tracebackBuffer = [];
+    this.serialCommandQueue = Promise.resolve();
+    this.pumpCommandInFlight = false;
   }
 
   setPump(enabled) {
     return this.setPumpState("pump-001", enabled);
   }
 
-  async setPumpState(deviceId, enabled) {
-    const nextState = this.store.updateState(deviceId, {
+  setWateringMode(mode) {
+    const normalized = String(mode || "").trim().toLowerCase();
+
+    if (!["manual", "automatic"].includes(normalized)) {
+      throw new Error("Watering mode must be either 'manual' or 'automatic'.");
+    }
+
+    const nextState = this.store.updateState("pump-001", {
       connected: true,
-      desiredEnabled: enabled,
-      status: "serial_command_queued",
+      wateringMode: normalized,
+      status: normalized === "automatic" ? "automatic_mode" : "manual_mode",
     });
+
     this.eventBus.emit(EVENTS.DEVICE_STATE_CHANGED, nextState);
+    return nextState;
+  }
 
-    const pinName = deviceId === "pump-001" ? "pin13" : "pin10";
-    const script = [
-      "from yolobit import " + pinName,
-      `${pinName}.write_digital(${enabled ? 1 : 0})`,
-      `print('PUMP_ACK|${deviceId}|${enabled ? 1 : 0}')`,
-    ].join("\n");
+  async setPumpState(deviceId, enabled) {
+    if (this.pumpCommandInFlight) {
+      throw new Error("A pump command is already being processed. Please wait a moment and try again.");
+    }
 
-    await this.sendExecScript(script);
+    const connectionInfo = this.serialGateway.getConnectionInfo();
+    if (!connectionInfo?.connected) {
+      this.store.updateState(deviceId, {
+        connected: false,
+        status: "offline",
+      });
+      throw new Error("No open serial connection to the YoloBit.");
+    }
 
-    const confirmed = this.store.updateState(deviceId, {
-      connected: true,
-      desiredEnabled: enabled,
-      reportedEnabled: enabled,
-      status: "serial_command_sent",
-    });
+    this.pumpCommandInFlight = true;
 
-    this.eventBus.emit(EVENTS.DEVICE_STATE_CHANGED, confirmed);
-    return confirmed;
+    try {
+      const nextState = this.store.updateState(deviceId, {
+        connected: true,
+        desiredEnabled: enabled,
+        status: "serial_command_queued",
+      });
+      this.eventBus.emit(EVENTS.DEVICE_STATE_CHANGED, nextState);
+
+      const pinName = this.config.pump.pinName;
+      const outputValue = enabled ? this.config.pump.onValue : this.config.pump.offValue;
+      const script = [
+        "try:",
+        `    from yolobit import ${pinName}`,
+        `    ${pinName}.write_digital(${outputValue})`,
+        `    print('PUMP_ACK|${deviceId}|${enabled ? 1 : 0}')`,
+        "except Exception as error:",
+        "    print('YOLOBIT_ERROR|{}|{}'.format(type(error).__name__, error))",
+      ].join("\n");
+
+      await this.sendExecScript(script);
+
+      const confirmed = this.store.updateState(deviceId, {
+        connected: true,
+        desiredEnabled: enabled,
+        reportedEnabled: enabled,
+        status: "serial_command_sent",
+      });
+
+      this.eventBus.emit(EVENTS.DEVICE_STATE_CHANGED, confirmed);
+      return confirmed;
+    } finally {
+      this.pumpCommandInFlight = false;
+    }
   }
 
   listState() {
@@ -189,6 +231,7 @@ class DeviceService {
 
   markSerialDisconnected() {
     this.stopSensorPolling();
+    this.pumpCommandInFlight = false;
     this.store.updateState("pump-001", {
       connected: false,
       status: "offline",
@@ -295,6 +338,7 @@ class DeviceService {
 
   handleSerialError(error) {
     this.stopSensorPolling();
+    this.pumpCommandInFlight = false;
     this.store.updateState("pump-001", {
       connected: false,
       status: "offline",
@@ -363,13 +407,30 @@ class DeviceService {
       "    print('YOLOBIT_ERROR|{}|{}'.format(type(error).__name__, error))",
     ].join("\n");
 
-    await this.sendExecScript(script);
+    try {
+      await this.sendExecScript(script);
+    } finally {
+      this.sensorPollInFlight = false;
+    }
+  }
+
+  enqueueSerialTask(task) {
+    const runTask = this.serialCommandQueue.then(task, task);
+    this.serialCommandQueue = runTask.catch(() => {});
+    return runTask;
   }
 
   async sendExecScript(script) {
-    const command = `exec(${JSON.stringify(script)})`;
-    await this.sendLine(command);
-    await delay(this.config.serial.commandSpacingMs);
+    return this.enqueueSerialTask(async () => {
+      const connectionInfo = this.serialGateway.getConnectionInfo();
+      if (!connectionInfo?.connected) {
+        throw new Error("No open serial connection to the YoloBit.");
+      }
+
+      const command = `exec(${JSON.stringify(script)})`;
+      await this.sendLine(command);
+      await delay(this.config.serial.commandSpacingMs);
+    });
   }
 
   async sendLine(command) {

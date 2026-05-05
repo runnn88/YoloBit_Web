@@ -23,3 +23,7 @@ export function refreshYoloBitSensors() {
 export function setPump(enabled) {
   return apiPost("/devices/pump", { enabled });
 }
+
+export function setWateringMode(mode) {
+  return apiPost("/devices/watering-mode", { mode });
+}

@@ -21,6 +21,14 @@ function createServer(dependencies) {
   });
   app.use("/api", routes(dependencies));
   app.use((error, req, res, next) => {
+    console.error("[backend-error] request failed", {
+      method: req.method,
+      path: req.originalUrl,
+      body: req.body,
+      message: error?.message || String(error),
+      stack: error?.stack,
+    });
+
     res.status(400).json({
       error: error.message || "Unexpected error",
     });
