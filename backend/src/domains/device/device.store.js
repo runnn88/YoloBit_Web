@@ -1,4 +1,4 @@
-class DeviceStore {
+﻿class DeviceStore {
   constructor() {
     this.state = {
       "pump-001": {
@@ -9,16 +9,18 @@ class DeviceStore {
         status: "offline",
         updatedAt: new Date().toISOString(),
       },
-      "yolobit-uno-001": {
-        deviceId: "yolobit-uno-001",
+      "yolobit-001": {
+        deviceId: "yolobit-001",
         connected: false,
         transport: "usb-serial",
         serialPath: "",
         baudRate: null,
-        desiredLeafState: "LA VANG",
+        desiredLeafState: null,
         reportedLeafState: null,
         lastCommand: null,
         lastSerialMessage: "",
+        lastSensorReadAt: null,
+        sensorError: "",
         status: "serial_disconnected",
         updatedAt: new Date().toISOString(),
       },

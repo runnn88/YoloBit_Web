@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const { createSensorController } = require("../domains/sensor/sensor.controller");
 const { createDeviceController } = require("../domains/device/device.controller");
 
@@ -13,6 +13,7 @@ module.exports = function routes({ sensorService, deviceService }) {
   router.post("/devices/pump", deviceController.setPump);
   router.post("/devices/yolobit/connect", deviceController.connectYoloBit);
   router.post("/devices/yolobit/disconnect", deviceController.disconnectYoloBit);
+  router.post("/devices/yolobit/refresh", deviceController.refreshSensors);
   router.post("/devices/yolobit/leaf", deviceController.setLeafState);
   router.post("/devices/yolobit/serial", deviceController.sendRawSerial);
 

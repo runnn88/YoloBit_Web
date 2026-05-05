@@ -1,4 +1,4 @@
-function createDeviceController(deviceService) {
+﻿function createDeviceController(deviceService) {
   return {
     list(req, res) {
       res.json(deviceService.listState());
@@ -27,6 +27,14 @@ function createDeviceController(deviceService) {
         next(error);
       }
     },
+    async refreshSensors(req, res, next) {
+      try {
+        const result = await deviceService.refreshSensors();
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
+    },
     async setLeafState(req, res, next) {
       try {
         const result = await deviceService.setLeafState(req.body?.state);
@@ -43,9 +51,13 @@ function createDeviceController(deviceService) {
         next(error);
       }
     },
-    setPump(req, res) {
-      const result = deviceService.setPump(Boolean(req.body.enabled));
-      res.json(result);
+    async setPump(req, res, next) {
+      try {
+        const result = await deviceService.setPump(Boolean(req.body?.enabled));
+        res.json(result);
+      } catch (error) {
+        next(error);
+      }
     },
   };
 }

@@ -1,4 +1,4 @@
-const config = require("./config");
+﻿const config = require("./config");
 const eventBus = require("./core/eventBus");
 const { createSerialGateway } = require("./core/serial");
 const { createServer } = require("./core/server");
@@ -15,6 +15,7 @@ const sensorService = new SensorService({ store: sensorStore, eventBus });
 const deviceService = new DeviceService({
   store: deviceStore,
   eventBus,
+  sensorService,
   serialGateway: {
     connect() {
       throw new Error("Serial gateway not initialized yet.");

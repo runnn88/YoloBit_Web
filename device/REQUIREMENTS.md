@@ -1,20 +1,51 @@
-# YoloBit Sample Requirements
+﻿# Yolo:Bit Requirements
 
-The YoloBit sample code provided for the USB-serial backend bridge depends on these modules:
+This project should not depend on downloading libraries from OhStem during setup or runtime.
+If a required Yolo:Bit helper library is not open source or not available as a normal package,
+we can vendor it into this repo from the local `Yolobit-RTOS-Lab-main` reference project.
 
-## Built-in / platform modules
+## What we already copied into this repo
 
-- `machine`
-- `ntptime`
-- `time`
-- `sys`
-- `uselect`
+The following board-side support files were copied from `Yolobit-RTOS-Lab-main` into
+`device/yolobit_rtos_reference`:
 
-## YoloBit / OhStem modules
+- `event_manager.py`
+- `lib/event_manager_ohstem.py`
+- `lib/mqtt.py`
+- `lib/ntp_helper.py`
+- `lib/umqtt_simple.py`
+- `lib/umqtt_robust.py`
+- `lib/utility.py`
+- `lib/aiot/aiot_dht20.py`
+- `lib/aiot/aiot_rgbled.py`
+- `lib/aiot/lcd1602_i2c.py`
 
-- `mqtt`
+So for this project, these copied files can be treated as vendored local dependencies.
+They do not need to be downloaded separately from OhStem.
+
+## What may still need to exist on the board firmware
+
+These are board-level modules or firmware features that are not provided by the copied `lib/` folder itself:
+
 - `yolobit`
-- `event_manager`
-- `homebit3_rgbled`
+- `machine`
+- `time`
+- `ntptime`
+- `neopixel`
+- `_thread`
 
-These must be available in the OhStem / YoloBit runtime when you upload the board program.
+## What is no longer the right dependency list
+
+The earlier assumptions below are not the right target for the rebuild:
+
+- `homebit3_rgbled`
+- other `homebit3_*` imports
+- YoloUno-specific raw GPIO assumptions
+
+## Practical direction
+
+For the next implementation pass:
+
+- we may use the locally copied Yolo:Bit RTOS helper files from `device/yolobit_rtos_reference`
+- we should not rely on external OhStem downloads as part of project setup
+- we should rebuild against Yolo:Bit, not YoloUno

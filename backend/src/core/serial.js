@@ -1,4 +1,4 @@
-const { SerialPort } = require("serialport");
+﻿const { SerialPort } = require("serialport");
 const { ReadlineParser } = require("@serialport/parser-readline");
 
 function formatPortInfo(port) {
@@ -52,7 +52,7 @@ function createSerialGateway({ onConnected, onDisconnected, onData, onError }) {
       });
     });
 
-    const parser = port.pipe(new ReadlineParser({ delimiter: "\r\n" }));
+    const parser = port.pipe(new ReadlineParser({ delimiter: "\n" }));
 
     parser.on("data", (line) => {
       if (typeof onData === "function") {

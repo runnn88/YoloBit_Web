@@ -1,4 +1,4 @@
-const { EVENTS } = require("../../../../shared/events");
+﻿const { EVENTS } = require("../../../../shared/events");
 
 class SensorService {
   constructor({ store, eventBus }) {
@@ -18,7 +18,11 @@ class SensorService {
   }
 
   listReadings() {
-    return this.store.list();
+    return this.store.listLatest();
+  }
+
+  listHistory() {
+    return this.store.listHistory();
   }
 }
 

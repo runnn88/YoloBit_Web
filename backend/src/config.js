@@ -1,10 +1,13 @@
-module.exports = {
+﻿module.exports = {
   port: process.env.PORT || 4000,
   mqtt: {
-    brokerUrl: process.env.MQTT_BROKER_URL || "mqtt://broker.hivemq.com:1883",
+    brokerUrl: process.env.MQTT_BROKER_URL || 'mqtt://broker.hivemq.com:1883',
   },
   serial: {
-    defaultPath: process.env.YOLOBIT_SERIAL_PATH || "",
+    defaultPath: process.env.YOLOBIT_SERIAL_PATH || '',
     defaultBaudRate: Number(process.env.YOLOBIT_BAUD_RATE || 115200),
+    startupDelayMs: Number(process.env.YOLOBIT_STARTUP_DELAY_MS || 1200),
+    pollIntervalMs: Number(process.env.YOLOBIT_SENSOR_POLL_INTERVAL_MS || 3000),
+    commandSpacingMs: Number(process.env.YOLOBIT_COMMAND_SPACING_MS || 200),
   },
 };

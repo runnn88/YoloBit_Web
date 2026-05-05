@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Dashboard } from "../features/dashboard/Dashboard";
 import { ConnectionPage } from "../features/connection/ConnectionPage";
-import { YoloBitUsbProvider } from "../features/connection/YoloBitUsbContext";
 
 function getPageFromHash(hash) {
   return hash === "#connection" ? "connection" : "dashboard";
@@ -25,7 +24,7 @@ export default function App() {
   }
 
   return (
-    <YoloBitUsbProvider>
+    <>
       <nav className="top-nav">
         <div className="top-nav-inner">
           <button
@@ -46,6 +45,6 @@ export default function App() {
       </nav>
 
       {page === "connection" ? <ConnectionPage /> : <Dashboard />}
-    </YoloBitUsbProvider>
+    </>
   );
 }
