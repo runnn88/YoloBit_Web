@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { fetchDevices, setPump, setWateringMode } from "../devices/deviceAPI";
-import { PumpControl } from "../devices/PumpControl";
+import { fetchDevices, setPump1, setPump2, setWateringMode } from "../devices/deviceAPI";
 
 const PUMP_CLICK_COOLDOWN_MS = 3000;
 
@@ -8,8 +7,8 @@ export function WateringPage() {
   const [devices, setDevices] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [busyAction, setBusyAction] = useState("");
-  const [pumpCooldown, setPumpCooldown] = useState(false);
-  const cooldownTimerRef = useRef(null);
+  const [pumpCooldown, setPumpCooldown] = useState({});
+  const cooldownTimerRef = useRef({});
 
   useEffect(() => {
     let cancelled = false;
@@ -34,26 +33,27 @@ export function WateringPage() {
     return () => {
       cancelled = true;
       window.clearInterval(timer);
-      if (cooldownTimerRef.current) {
-        window.clearTimeout(cooldownTimerRef.current);
-      }
+      Object.values(cooldownTimerRef.current).forEach(timer => window.clearTimeout(timer));
     };
   }, []);
 
-  const pumpDevice = devices["pump-001"] || {};
-  const isAutomatic = pumpDevice.wateringMode === "automatic";
-  const pumpBusy = busyAction === "pump";
+  const pump1Device = devices["pump-001"] || {};
+  const pump2Device = devices["pump-002"] || {};
+  const yoloBitDevice = devices["yolobit-001"] || {};
+  const isAutomatic = pump1Device.wateringMode === "automatic";
+  const pump1Busy = busyAction === "pump1";
+  const pump2Busy = busyAction === "pump2";
   const modeBusy = busyAction === "mode";
-  const pumpLocked = pumpBusy || pumpCooldown;
+  const isConnected = yoloBitDevice.connected;
 
-  function startPumpCooldown() {
-    setPumpCooldown(true);
-    if (cooldownTimerRef.current) {
-      window.clearTimeout(cooldownTimerRef.current);
+  function startPumpCooldown(pumpId) {
+    setPumpCooldown(prev => ({ ...prev, [pumpId]: true }));
+    if (cooldownTimerRef.current[pumpId]) {
+      window.clearTimeout(cooldownTimerRef.current[pumpId]);
     }
-    cooldownTimerRef.current = window.setTimeout(() => {
-      setPumpCooldown(false);
-      cooldownTimerRef.current = null;
+    cooldownTimerRef.current[pumpId] = window.setTimeout(() => {
+      setPumpCooldown(prev => ({ ...prev, [pumpId]: false }));
+      delete cooldownTimerRef.current[pumpId];
     }, PUMP_CLICK_COOLDOWN_MS);
   }
 
@@ -64,8 +64,9 @@ export function WateringPage() {
 
     try {
       setBusyAction("mode");
-      const nextState = await setWateringMode(mode);
-      setDevices((prev) => ({ ...prev, "pump-001": nextState }));
+      const nextState1 = await setWateringMode(mode);
+      const nextState2 = { ...nextState1, deviceId: "pump-002" }; // Assuming same mode for both
+      setDevices((prev) => ({ ...prev, "pump-001": nextState1, "pump-002": nextState2 }));
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(error.message || String(error));
@@ -74,16 +75,20 @@ export function WateringPage() {
     }
   }
 
-  async function handlePumpToggle() {
-    if (busyAction || pumpCooldown) {
+  async function handlePumpToggle(pumpId, setPumpFunc) {
+    if (busyAction || pumpCooldown[pumpId]) {
       return;
     }
 
     try {
-      setBusyAction("pump");
-      startPumpCooldown();
-      const nextState = await setPump(!Boolean(pumpDevice.desiredEnabled));
-      setDevices((prev) => ({ ...prev, "pump-001": nextState }));
+      setBusyAction(pumpId === "pump-001" ? "pump1" : "pump2");
+      startPumpCooldown(pumpId);
+      // Set mode to manual
+      await setWateringMode("manual");
+      // Toggle pump
+      const device = devices[pumpId];
+      const nextState = await setPumpFunc(!Boolean(device?.desiredEnabled));
+      setDevices((prev) => ({ ...prev, [pumpId]: nextState }));
       setErrorMessage("");
     } catch (error) {
       setErrorMessage(error.message || String(error));
@@ -114,37 +119,30 @@ export function WateringPage() {
         <article className={isAutomatic ? "mode-card active" : "mode-card"}>
           <p className="panel-kicker">Smart Mode</p>
           <h3>Automatic watering</h3>
-          <p className="panel-copy">Use backend state to prepare for soil-based watering logic without manually toggling the pump every time.</p>
+          <p className="panel-copy">Automatically open both pumps based on Soil Moisture sensor readings.</p>
           <button className="primary-action" disabled={Boolean(busyAction) || isAutomatic} onClick={() => handleModeChange("automatic")} type="button">
             {modeBusy && !isAutomatic ? "Switching..." : "Start Automatically"}
           </button>
         </article>
 
         <article className={!isAutomatic ? "mode-card active" : "mode-card"}>
-          <p className="panel-kicker">Operator Mode</p>
-          <h3>Manual watering</h3>
-          <p className="panel-copy">Keep the pump under direct human control from the web dashboard.</p>
-          <button className="secondary-action" disabled={Boolean(busyAction) || !isAutomatic} onClick={() => handleModeChange("manual")} type="button">
-            {modeBusy && isAutomatic ? "Switching..." : "Switch to Manual"}
+          <p className="panel-kicker">Manual Control</p>
+          <h3>Pump 1</h3>
+          <p className="panel-copy">Turn on Pump 1 and switch to Manual mode for direct control.</p>
+          <button className="secondary-action" disabled={Boolean(busyAction) || pumpCooldown["pump-001"]} onClick={() => handlePumpToggle("pump-001", setPump1)} type="button">
+            {pump1Busy ? "Toggling..." : pumpCooldown["pump-001"] ? "Cooldown..." : pump1Device?.desiredEnabled ? "Turn Off Pump 1" : "Turn On Pump 1"}
+          </button>
+        </article>
+
+        <article className={!isAutomatic ? "mode-card active" : "mode-card"}>
+          <p className="panel-kicker">Manual Control</p>
+          <h3>Pump 2</h3>
+          <p className="panel-copy">Turn on Pump 2 and switch to Manual mode for direct control.</p>
+          <button className="secondary-action" disabled={Boolean(busyAction) || pumpCooldown["pump-002"]} onClick={() => handlePumpToggle("pump-002", setPump2)} type="button">
+            {pump2Busy ? "Toggling..." : pumpCooldown["pump-002"] ? "Cooldown..." : pump2Device?.desiredEnabled ? "Turn Off Pump 2" : "Turn On Pump 2"}
           </button>
         </article>
       </section>
-
-      <PumpControl
-        device={pumpDevice}
-        disabled={isAutomatic || pumpLocked}
-        hint={
-          isAutomatic
-            ? "Manual pump switching is disabled while automatic mode is armed."
-            : pumpBusy
-              ? "Sending pump command to the backend..."
-              : pumpCooldown
-                ? "Pump button is briefly locked to prevent spam clicks."
-                : "Use manual override to start or stop watering now."
-        }
-        onToggle={handlePumpToggle}
-        title="Main Pump"
-      />
     </main>
   );
 }

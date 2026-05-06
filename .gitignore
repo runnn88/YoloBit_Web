@@ -1,5 +1,88 @@
+# Dependencies
 node_modules/
+.npm
+
+# Build and dist folders
 dist/
+build/
+out/
+*.egg-info/
+*.dist-info/
+
+# Environment variables
 .env
+.env.local
+.env.*.local
+env/
+.venv/
+venv/
+ENV/
+
+# IDE and Editor files
+.vscode/
+.idea/
+.vs/
+.vscoderc
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
 .DS_Store
+
+# Python
 __pycache__/
+*.py[cod]
+*$py.class
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# OS-specific
+.DS_Store
+Thumbs.db
+.trashes
+ehthumbs.db
+Desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/
+
+# System
+.AppleDouble
+.LSOverride
+._*
+
+# IDE temp files
+.classpath
+.c9/
+*.launch
+.scalabigdata
+.sbtserver
+
+# Misc
+.DS_Store
+*.pem
+.env.production.local
+.env.test.local
+.env.development.local

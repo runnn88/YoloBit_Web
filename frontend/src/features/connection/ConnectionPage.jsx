@@ -133,7 +133,17 @@ export function ConnectionPage() {
           </select>
 
           <label className="field-label" htmlFor="serial-baud-rate">Baud rate</label>
-          <input className="text-input" id="serial-baud-rate" onChange={(event) => setBaudRate(event.target.value)} value={baudRate} />
+          <select className="text-input" id="serial-baud-rate" onChange={(event) => setBaudRate(event.target.value)} value={baudRate}>
+            <option value="9600">9600</option>
+            <option value="19200">19200</option>
+            <option value="38400">38400</option>
+            <option value="57600">57600</option>
+            <option value="115200">115200</option>
+          </select>
+          <p className="field-help">
+            Baud rate determines the speed of serial communication in bits per second. Higher rates allow faster data transfer but require reliable connections. 
+            Bit time = 1 / baud rate seconds. For {baudRate} baud: { (1000000 / Number(baudRate)).toFixed(1) } μs per bit.
+          </p>
 
           <div className="connection-actions">
             <button className="primary-action" disabled={!selectedPort || busyAction !== "" || yoloBitDevice?.connected} onClick={handleConnect} type="button">

@@ -2,6 +2,7 @@
 import { Dashboard } from "../features/dashboard/Dashboard";
 import { WateringPage } from "../features/watering/WateringPage";
 import { ConnectionPage } from "../features/connection/ConnectionPage";
+import { fetchDevices } from "../features/devices/deviceAPI";
 
 function getPageFromHash(hash) {
   if (hash === "#watering") {
@@ -15,6 +16,32 @@ function getPageFromHash(hash) {
 
 export default function App() {
   const [page, setPage] = useState(getPageFromHash(window.location.hash));
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function checkConnection() {
+      try {
+        const devices = await fetchDevices();
+        if (!cancelled) {
+          setIsConnected(Boolean(devices?.["yolobit-001"]?.connected));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setIsConnected(false);
+        }
+      }
+    }
+
+    checkConnection();
+    const timer = window.setInterval(checkConnection, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   useEffect(() => {
     function handleHashChange() {
@@ -56,6 +83,8 @@ export default function App() {
               className={page === "watering" ? "top-nav-link active" : "top-nav-link"}
               onClick={() => navigate("watering")}
               type="button"
+              disabled={!isConnected}
+              style={{ opacity: !isConnected ? 0.5 : 1, cursor: !isConnected ? 'not-allowed' : 'pointer' }}
             >
               Watering Options
             </button>

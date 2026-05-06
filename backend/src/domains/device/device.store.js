@@ -10,6 +10,15 @@
         status: "offline",
         updatedAt: new Date().toISOString(),
       },
+      "pump-002": {
+        deviceId: "pump-002",
+        connected: false,
+        desiredEnabled: false,
+        reportedEnabled: false,
+        wateringMode: "manual",
+        status: "offline",
+        updatedAt: new Date().toISOString(),
+      },
       "yolobit-001": {
         deviceId: "yolobit-001",
         connected: false,

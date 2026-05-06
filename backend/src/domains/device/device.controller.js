@@ -74,6 +74,24 @@ function createDeviceController(deviceService) {
         next(error);
       }
     },
+    async setPump1(req, res, next) {
+      try {
+        const result = await deviceService.setPump1(Boolean(req.body?.enabled));
+        res.json(result);
+      } catch (error) {
+        logDeviceError("setPump1", error, { body: req.body || {} });
+        next(error);
+      }
+    },
+    async setPump2(req, res, next) {
+      try {
+        const result = await deviceService.setPump2(Boolean(req.body?.enabled));
+        res.json(result);
+      } catch (error) {
+        logDeviceError("setPump2", error, { body: req.body || {} });
+        next(error);
+      }
+    },
     setWateringMode(req, res, next) {
       try {
         const result = deviceService.setWateringMode(req.body?.mode);

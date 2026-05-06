@@ -10,9 +10,14 @@ module.exports = {
     pollIntervalMs: Number(process.env.YOLOBIT_SENSOR_POLL_INTERVAL_MS || 3000),
     commandSpacingMs: Number(process.env.YOLOBIT_COMMAND_SPACING_MS || 200),
   },
-  pump: {
-    pinName: process.env.YOLOBIT_PUMP_PIN || 'pin10',
-    onValue: Number(process.env.YOLOBIT_PUMP_ON_VALUE || 1),
-    offValue: Number(process.env.YOLOBIT_PUMP_OFF_VALUE || 0),
+  pump1: {
+    pinName: process.env.YOLOBIT_PUMP1_PIN || 'pin10',
+    onValue: Number(process.env.YOLOBIT_PUMP1_ON_VALUE || 1),
+    offValue: Number(process.env.YOLOBIT_PUMP1_OFF_VALUE || 0),
+  },
+  pump2: {
+    pinName: process.env.YOLOBIT_PUMP2_PIN || 'pin11',
+    onValue: Number(process.env.YOLOBIT_PUMP2_ON_VALUE || 1),
+    offValue: Number(process.env.YOLOBIT_PUMP2_OFF_VALUE || 0),
   },
 };

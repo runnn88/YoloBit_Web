@@ -24,6 +24,14 @@ export function setPump(enabled) {
   return apiPost("/devices/pump", { enabled });
 }
 
+export function setPump1(enabled) {
+  return apiPost("/devices/pump1", { enabled });
+}
+
+export function setPump2(enabled) {
+  return apiPost("/devices/pump2", { enabled });
+}
+
 export function setWateringMode(mode) {
   return apiPost("/devices/watering-mode", { mode });
 }

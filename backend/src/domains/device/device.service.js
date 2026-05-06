@@ -32,6 +32,14 @@ class DeviceService {
     return this.setPumpState("pump-001", enabled);
   }
 
+  setPump1(enabled) {
+    return this.setPumpState("pump-001", enabled);
+  }
+
+  setPump2(enabled) {
+    return this.setPumpState("pump-002", enabled);
+  }
+
   setWateringMode(mode) {
     const normalized = String(mode || "").trim().toLowerCase();
 
@@ -73,8 +81,9 @@ class DeviceService {
       });
       this.eventBus.emit(EVENTS.DEVICE_STATE_CHANGED, nextState);
 
-      const pinName = this.config.pump.pinName;
-      const outputValue = enabled ? this.config.pump.onValue : this.config.pump.offValue;
+      const pumpConfig = deviceId === "pump-001" ? this.config.pump1 : this.config.pump2;
+      const pinName = pumpConfig.pinName;
+      const outputValue = enabled ? pumpConfig.onValue : pumpConfig.offValue;
       const script = [
         "try:",
         `    from yolobit import ${pinName}`,
