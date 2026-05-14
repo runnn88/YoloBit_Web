@@ -20,8 +20,17 @@ export function refreshYoloBitSensors() {
   return apiPost("/devices/yolobit/refresh", {});
 }
 
+<<<<<<< Updated upstream
 export function setPump(enabled) {
   return apiPost("/devices/pump", { enabled });
+=======
+export function fetchSoilThresholds() {
+  return apiGet("/devices/thresholds");
+}
+
+export function setSoilThresholds(thresholds) {
+  return apiPost("/devices/thresholds", thresholds);
+>>>>>>> Stashed changes
 }
 
 export function setPump1(enabled) {

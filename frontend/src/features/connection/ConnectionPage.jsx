@@ -5,6 +5,8 @@ import {
   fetchDevices,
   fetchYoloBitPorts,
   refreshYoloBitSensors,
+  fetchSoilThresholds,
+  setSoilThresholds,
 } from "../devices/deviceAPI";
 import { fetchBackendHealth } from "../../services/api";
 
@@ -21,13 +23,24 @@ export function ConnectionPage() {
   const [lastCheckedAt, setLastCheckedAt] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [busyAction, setBusyAction] = useState("");
+  const [soilWarnThreshold, setSoilWarnThreshold] = useState(10);
+  const [soilDangerThreshold, setSoilDangerThreshold] = useState(5);
+  const [thresholdSaveMessage, setThresholdSaveMessage] = useState("");
 
-  async function refreshStatus() {
+  async function refreshStatus({ loadThresholds = false } = {}) {
     try {
-      const [health, deviceRows, portRows] = await Promise.all([fetchBackendHealth(), fetchDevices(), fetchYoloBitPorts()]);
+      const promises = [fetchBackendHealth(), fetchDevices(), fetchYoloBitPorts()];
+      if (loadThresholds) {
+        promises.push(fetchSoilThresholds());
+      }
+      const [health, deviceRows, portRows, thresholds] = await Promise.all(promises);
       setBackendOk(Boolean(health?.ok));
       setDevices(deviceRows || {});
       setPorts(portRows || []);
+      if (loadThresholds) {
+        setSoilWarnThreshold(thresholds?.warn ?? 10);
+        setSoilDangerThreshold(thresholds?.danger ?? 5);
+      }
       if (!selectedPort && portRows?.length) {
         setSelectedPort(portRows[0].path);
       }
@@ -45,18 +58,18 @@ export function ConnectionPage() {
 
     async function hydrate() {
       if (!cancelled) {
-        await refreshStatus();
+        await refreshStatus({ loadThresholds: true });
       }
     }
 
     hydrate();
-    const timer = window.setInterval(hydrate, 4000);
+    const timer = window.setInterval(() => refreshStatus(), 4000);
 
     return () => {
       cancelled = true;
       window.clearInterval(timer);
     };
-  }, [selectedPort]);
+  }, []);
 
   async function handleConnect() {
     try {
@@ -87,6 +100,23 @@ export function ConnectionPage() {
       setBusyAction("refresh");
       await refreshYoloBitSensors();
       window.setTimeout(refreshStatus, 500);
+    } catch (error) {
+      setErrorMessage(error.message || String(error));
+    } finally {
+      setBusyAction("");
+    }
+  }
+
+  async function handleSaveThresholds() {
+    try {
+      setBusyAction("save-thresholds");
+      const result = await setSoilThresholds({
+        warn: soilWarnThreshold,
+        danger: soilDangerThreshold,
+      });
+      setThresholdSaveMessage(`Saved warn=${result.warn} and danger=${result.danger}.`);
+      setErrorMessage("");
+      window.setTimeout(() => setThresholdSaveMessage(""), 4000);
     } catch (error) {
       setErrorMessage(error.message || String(error));
     } finally {
@@ -174,6 +204,61 @@ export function ConnectionPage() {
           <p className="panel-copy">Last serial message: <code>{yoloBitDevice?.lastSerialMessage || "waiting"}</code></p>
           <p className="panel-copy">Last sensor read: <code>{yoloBitDevice?.lastSensorReadAt || "waiting"}</code></p>
           <p className="panel-copy">Sensor error: <code>{yoloBitDevice?.sensorError || "none"}</code></p>
+        </article>
+
+        <article className="panel-card">
+          <div className="panel-head">
+            <div>
+              <p className="panel-kicker">Soil Thresholds</p>
+              <h3>Automatic Pump Control</h3>
+            </div>
+            <StatusPill label="Configurable" tone="subtle" />
+          </div>
+
+          <label className="field-label" htmlFor="soil-warn-threshold">Warn threshold</label>
+          <input
+            id="soil-warn-threshold"
+            className="text-input"
+            type="number"
+            min="0"
+            max="100"
+            value={soilWarnThreshold}
+            onChange={(event) => setSoilWarnThreshold(Number(event.target.value))}
+          />
+
+          <label className="field-label" htmlFor="soil-danger-threshold">Danger threshold</label>
+          <input
+            id="soil-danger-threshold"
+            className="text-input"
+            type="number"
+            min="0"
+            max="100"
+            value={soilDangerThreshold}
+            onChange={(event) => setSoilDangerThreshold(Number(event.target.value))}
+          />
+
+          <p className="panel-copy">
+            The backend will turn pumps on according to the soil gauge thresholds below.
+          </p>
+          <ul className="panel-copy" style={{ marginLeft: '1rem' }}>
+            <li><strong>Soil &lt; danger:</strong> Pump 1 + Pump 2 turn on</li>
+            <li><strong>Soil &lt; warn:</strong> Pump 1 turns on, Pump 2 stays off</li>
+            <li><strong>Soil ≥ warn:</strong> no pumps turn on</li>
+          </ul>
+          <p className="panel-copy" style={{ marginTop: '0.5rem' }}>
+            Set a higher warn value to make Pump 1 start earlier. The danger threshold must be lower than warn.
+          </p>
+          <div className="connection-actions">
+            <button
+              className="primary-action"
+              disabled={busyAction !== ""}
+              onClick={handleSaveThresholds}
+              type="button"
+            >
+              {busyAction === "save-thresholds" ? "Saving..." : "Save Thresholds"}
+            </button>
+          </div>
+          {thresholdSaveMessage ? <p className="status-banner success">{thresholdSaveMessage}</p> : null}
         </article>
       </section>
     </main>

@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useMemo, useState, useRef } from "react";
-import { fetchDevices, setPump1, setPump2 } from "../devices/deviceAPI";
+import { fetchDevices, setPump1, setPump2, fetchSoilThresholds } from "../devices/deviceAPI";
 import { SensorCard } from "../sensors/SensorCard";
 import { fetchSensors } from "../sensors/sensorAPI";
 
@@ -10,9 +10,20 @@ function sensorMap(rows) {
   }, {});
 }
 
+<<<<<<< Updated upstream
 function formatNumber(value, digits = 1) {
   if (typeof temp !== "number" || !Number.isFinite(temp)) {
     return "--";
+=======
+const DEFAULT_SOIL_GAUGE_THRESHOLDS = {
+  danger: 5,
+  warn: 10,
+};
+
+function formatNumber(value, digits = 1, valueIfInvalid = "--") {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return valueIfInvalid;
+>>>>>>> Stashed changes
   }
   return value.toFixed(digits);
 }
@@ -33,6 +44,7 @@ function computePlantStatus(temp, humidity, soil) {
   return "Healthy";
 }
 
+<<<<<<< Updated upstream
 function computeGdd(temp) {
   // if (typeof temp !== "number" || !Number.isFinite(temp)) {
   //   return "--";
@@ -49,30 +61,64 @@ function soilGaugeTone(soil) {
     return "danger";
   }
   if (soil < 60) {
+=======
+function soilGaugeTone(soil, thresholds) {
+  if (typeof soil !== "number" || !Number.isFinite(soil)) {
+    return "quiet";
+  }
+  const { danger, warn } = thresholds;
+  if (soil < danger) {
+    return "danger";
+  }
+  if (soil < warn) {
+>>>>>>> Stashed changes
     return "warn";
   }
   return "good";
 }
 
+<<<<<<< Updated upstream
+=======
+function getSoilGaugeGradient(thresholds) {
+  const { danger, warn } = thresholds;
+  return `linear-gradient(90deg, #d9534f 0%, #d9534f ${danger}%, #f0ad4e ${danger}%, #f0ad4e ${warn}%, #5cb85c ${warn}%, #5cb85c 100%)`;
+}
+
+>>>>>>> Stashed changes
 function LineChart({ data, maxValue, width = 300, height = 100 }) {
-  if (!data || data.length < 2) {
+  if (!data || data.length < 1) {
     return <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999' }}>No data</div>;
   }
 
   const points = data.map((point, index) => {
-    const x = (index / (data.length - 1)) * width;
-    const y = height - (point.value / maxValue) * height;
-    return `${x},${y}`;
-  }).join(' ');
+    const x = (data.length === 1 ? width / 2 : (index / (data.length - 1)) * width);
+    const y = height - ((typeof point.value === 'number' ? point.value : 0) / maxValue) * height;
+    return { x, y };
+  });
+
+  const polylinePoints = points.length > 1 ? points.map((p) => `${p.x},${p.y}`).join(' ') : "";
 
   return (
     <svg width={width} height={height} style={{ border: '1px solid #e6ece7', borderRadius: '8px' }}>
-      <polyline
-        fill="none"
-        stroke="#8dbfc7"
-        strokeWidth="2"
-        points={points}
-      />
+      {polylinePoints ? (
+        <polyline
+          fill="none"
+          stroke="#8dbfc7"
+          strokeWidth="2"
+          points={polylinePoints}
+        />
+      ) : null}
+      {points.map((point, index) => (
+        <circle
+          key={`point-${index}`}
+          cx={point.x}
+          cy={point.y}
+          r="3"
+          fill="#8dbfc7"
+          stroke="#ffffff"
+          strokeWidth="1"
+        />
+      ))}
     </svg>
   );
 }
@@ -80,10 +126,14 @@ function LineChart({ data, maxValue, width = 300, height = 100 }) {
 export function Dashboard() {
   const [sensors, setSensors] = useState([]);
   const [devices, setDevices] = useState({});
+  const [soilThresholds, setSoilThresholds] = useState(DEFAULT_SOIL_GAUGE_THRESHOLDS);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [pumpBusy, setPumpBusy] = useState({});
-  const [sensorHistory, setSensorHistory] = useState({ soil: [], lux: [] });
+  const [sensorHistory, setSensorHistory] = useState({
+    soil: [{ time: Date.now() - 3000, value: 100 }, { time: Date.now(), value: 100 }],
+    lux: [],
+  });
   const [soilTrend, setSoilTrend] = useState(null);
   const prevSoilRef = useRef(null);
 
@@ -92,10 +142,15 @@ export function Dashboard() {
 
     async function hydrateDashboard() {
       try {
-        const [sensorRows, deviceRows] = await Promise.all([fetchSensors(), fetchDevices()]);
+        const [sensorRows, deviceRows, thresholdRows] = await Promise.all([
+          fetchSensors(),
+          fetchDevices(),
+          fetchSoilThresholds(),
+        ]);
         if (!cancelled) {
           setSensors(sensorRows || []);
           setDevices(deviceRows || {});
+          setSoilThresholds(thresholdRows || DEFAULT_SOIL_GAUGE_THRESHOLDS);
           setErrorMessage("");
 
           // Update sensor history
@@ -196,8 +251,12 @@ export function Dashboard() {
 
         <SensorCard eyebrow="V3" title="Soil Moisture" unit="%" value={typeof soil === "number" ? `${Math.round(soil)}%` : "--"}>
           <div style={{ position: 'relative', paddingTop: '20px' }}>
+<<<<<<< Updated upstream
             <div className="mini-bar" style={{ background: 'linear-gradient(90deg, #d9534f 0%, #d9534f 33%, #f0ad4e 33%, #f0ad4e 66%, #5cb85c 66%, #5cb85c 100%)' }}>
               <span style={{ width: `${typeof soil === "number" ? Math.max(0, Math.min(100, soil)) : 0}%`, backgroundColor: '#2c3e50', opacity: 0.6 }} />
+=======
+            <div className="mini-bar" style={{ background: getSoilGaugeGradient(soilThresholds) }}>
+>>>>>>> Stashed changes
             </div>
             <span style={{ 
               position: 'absolute', 

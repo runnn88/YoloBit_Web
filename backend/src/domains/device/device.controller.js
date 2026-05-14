@@ -16,7 +16,7 @@ function createDeviceController(deviceService) {
         const result = await deviceService.listSerialPorts();
         res.json(result);
       } catch (error) {
-        logDeviceError("listPorts", error);
+        logDeviceError("listPorts", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -34,7 +34,7 @@ function createDeviceController(deviceService) {
         const result = await deviceService.disconnectYoloBit();
         res.json(result);
       } catch (error) {
-        logDeviceError("disconnectYoloBit", error);
+        logDeviceError("disconnectYoloBit", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -43,7 +43,7 @@ function createDeviceController(deviceService) {
         const result = await deviceService.refreshSensors();
         res.json(result);
       } catch (error) {
-        logDeviceError("refreshSensors", error);
+        logDeviceError("refreshSensors", error, { body: req.body || {} });
         next(error);
       }
     },
@@ -89,6 +89,24 @@ function createDeviceController(deviceService) {
         res.json(result);
       } catch (error) {
         logDeviceError("setPump2", error, { body: req.body || {} });
+        next(error);
+      }
+    },
+    listThresholds(req, res, next) {
+      try {
+        const result = deviceService.getSoilThresholds();
+        res.json(result);
+      } catch (error) {
+        logDeviceError("listThresholds", error, { body: req.body || {} });
+        next(error);
+      }
+    },
+    setThresholds(req, res, next) {
+      try {
+        const result = deviceService.setSoilThresholds(req.body || {});
+        res.json(result);
+      } catch (error) {
+        logDeviceError("setThresholds", error, { body: req.body || {} });
         next(error);
       }
     },

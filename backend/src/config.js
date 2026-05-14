@@ -10,6 +10,10 @@ module.exports = {
     pollIntervalMs: Number(process.env.YOLOBIT_SENSOR_POLL_INTERVAL_MS || 3000),
     commandSpacingMs: Number(process.env.YOLOBIT_COMMAND_SPACING_MS || 200),
   },
+  soilThresholds: {
+    warn: Number(process.env.YOLOBIT_SOIL_WARN_THRESHOLD || 10),
+    danger: Number(process.env.YOLOBIT_SOIL_DANGER_THRESHOLD || 5),
+  },
   pump1: {
     pinName: process.env.YOLOBIT_PUMP1_PIN || 'pin10',
     onValue: Number(process.env.YOLOBIT_PUMP1_ON_VALUE || 1),
