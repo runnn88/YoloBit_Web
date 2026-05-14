@@ -13,6 +13,8 @@ module.exports = function routes({ sensorService, deviceService }) {
   router.post("/devices/pump", deviceController.setPump);
   router.post("/devices/pump1", deviceController.setPump1);
   router.post("/devices/pump2", deviceController.setPump2);
+  router.get("/devices/thresholds", deviceController.listThresholds);
+  router.post("/devices/thresholds", deviceController.setThresholds);
   router.post("/devices/watering-mode", deviceController.setWateringMode);
   router.post("/devices/yolobit/connect", deviceController.connectYoloBit);
   router.post("/devices/yolobit/disconnect", deviceController.disconnectYoloBit);

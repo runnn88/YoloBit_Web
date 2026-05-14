@@ -14,6 +14,11 @@ function normalizeLine(line) {
     .trim();
 }
 
+function parseSensorValue(value) {
+  const match = String(value || "").match(/-?\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : NaN;
+}
+
 class DeviceService {
   constructor({ store, eventBus, serialGateway, config, sensorService }) {
     this.store = store;
@@ -26,6 +31,36 @@ class DeviceService {
     this.tracebackBuffer = [];
     this.serialCommandQueue = Promise.resolve();
     this.pumpCommandInFlight = false;
+    this.soilThresholds = {
+      warn: Number(config.soilThresholds?.warn ?? 10),
+      danger: Number(config.soilThresholds?.danger ?? 5),
+    };
+  }
+
+  getSoilThresholds() {
+    return { ...this.soilThresholds };
+  }
+
+  setSoilThresholds({ warn, danger }) {
+    const parsedWarn = Number(warn);
+    const parsedDanger = Number(danger);
+
+    if (!Number.isFinite(parsedWarn) || !Number.isFinite(parsedDanger)) {
+      throw new Error("Soil thresholds must be valid numbers.");
+    }
+    if (parsedDanger < 0 || parsedWarn < 0 || parsedWarn > 100 || parsedDanger > 100) {
+      throw new Error("Soil thresholds must be between 0 and 100.");
+    }
+    if (parsedWarn <= parsedDanger) {
+      throw new Error("Warn threshold must be greater than danger threshold.");
+    }
+
+    this.soilThresholds = {
+      warn: parsedWarn,
+      danger: parsedDanger,
+    };
+
+    return this.getSoilThresholds();
   }
 
   setPump(enabled) {
@@ -57,6 +92,31 @@ class DeviceService {
     return nextState;
   }
 
+<<<<<<< Updated upstream
+=======
+  async applyAutomaticPumpState(soilValue) {
+    const pumpState = this.store.getState();
+    const pump1 = pumpState["pump-001"] || {};
+    const pump2 = pumpState["pump-002"] || {};
+
+    if (pump1.wateringMode !== "automatic") {
+      return null;
+    }
+
+    const shouldPump1BeOn = soilValue < this.soilThresholds.warn;
+    const shouldPump2BeOn = soilValue < this.soilThresholds.danger;
+
+    if (pump1.desiredEnabled !== shouldPump1BeOn) {
+      await this.setPump1(shouldPump1BeOn);
+    }
+    if (pump2.desiredEnabled !== shouldPump2BeOn) {
+      await this.setPump2(shouldPump2BeOn);
+    }
+
+    return null;
+  }
+
+>>>>>>> Stashed changes
   async setPumpState(deviceId, enabled) {
     if (this.pumpCommandInFlight) {
       throw new Error("A pump command is already being processed. Please wait a moment and try again.");
@@ -126,6 +186,10 @@ class DeviceService {
     });
 
     await this.initializeBoardSession();
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
     this.startSensorPolling();
     await this.requestSensorSnapshot();
 
@@ -275,10 +339,10 @@ class DeviceService {
       if (parts.length >= 5) {
         const [_, temp, humidity, soil, lux] = parts;
         const timestamp = new Date().toISOString();
-        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "temp", value: Number(temp), timestamp });
-        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "humidity", value: Number(humidity), timestamp });
-        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "soil", value: Number(soil), timestamp });
-        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "lux", value: Number(lux), timestamp });
+        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "temp", value: parseSensorValue(temp), timestamp });
+        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "humidity", value: parseSensorValue(humidity), timestamp });
+        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "soil", value: parseSensorValue(soil), timestamp });
+        this.sensorService.ingestReading({ deviceId: SENSOR_DEVICE_ID, metric: "lux", value: parseSensorValue(lux), timestamp });
 
         const updatedState = this.store.updateState(DEVICE_ID, {
           lastSerialMessage: cleanLine,
